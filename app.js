@@ -77,6 +77,10 @@ const locateBtn = document.getElementById('locate');
 const weatherDiv = document.getElementById('weather');
 const dateInput = document.getElementById('date');
 const locationInfo = document.getElementById('location-info');
+const mapContainer = document.getElementById('map');
+
+let map = null;
+let marker = null;
 
 const today = new Date().toISOString().split('T')[0];
 dateInput.value = today;
@@ -153,6 +157,7 @@ async function getWeatherByCoords(lat, lon) {
         };
         
         displayWeather(location, weatherData.daily, selectedDate);
+        updateMap(lat, lon, locationName);
     } catch (error) {
         throw error;
     }
@@ -266,6 +271,7 @@ function fetchWeatherForLocation(location, selectedDate) {
         .then(weatherData => {
             currentCity = cityInput.value;
             displayWeather(location, weatherData.daily, selectedDate);
+            updateMap(location.latitude, location.longitude, location.name);
         })
         .catch(error => showError(error.message));
 }
@@ -341,6 +347,29 @@ function getWindArrow(degrees) {
     return arrows[index];
 }
 
+function updateMap(lat, lon, locationName) {
+    // Show the map container
+    mapContainer.classList.add('visible');
+    
+    // Initialize map if it doesn't exist
+    if (!map) {
+        map = L.map('map').setView([lat, lon], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+        marker = L.marker([lat, lon]).addTo(map);
+    } else {
+        // Update existing map
+        map.setView([lat, lon], 10);
+        marker.setLatLng([lat, lon]);
+    }
+    
+    // Update marker popup
+    marker.bindPopup(`<strong>${locationName}</strong>`).openPopup();
+}
+
 function showError(message) {
     weatherDiv.innerHTML = `<div class="error">${message}</div>`;
+    mapContainer.classList.remove('visible');
 }
