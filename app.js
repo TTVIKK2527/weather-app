@@ -67,6 +67,7 @@ async function getWeatherByCoords(lat, lon) {
         const country = reverseGeoData.countryName || '';
         
         cityInput.value = locationName;
+        currentCity = locationName;
         locationInfo.innerHTML = `<strong>📍 ${locationName}</strong>${country ? '<br><small>' + country + '</small>' : ''}`;
         
         const isHistorical = new Date(selectedDate) < new Date(today);
@@ -79,7 +80,7 @@ async function getWeatherByCoords(lat, lon) {
         
         const location = {
             name: locationName,
-            country: country
+            country: country || 'Unknown'
         };
         
         displayWeather(location, weatherData.daily, selectedDate);
@@ -219,8 +220,14 @@ function displayWeather(location, weather, selectedDate) {
     const weatherInfo = weatherData[weather.weathercode[0]] || { desc: 'Unknown', icon: '🌍' };
     const windArrow = getWindArrow(windDir);
     
+    // Handle undefined, null, or string "undefined" for country
+    const country = location.country && location.country !== 'undefined' && location.country.trim() !== '' 
+        ? location.country 
+        : '';
+    const countryDisplay = country ? `, ${country}` : '';
+    
     weatherDiv.innerHTML = `
-        <h2>${location.name}, ${location.country}</h2>
+        <h2>${location.name}${countryDisplay}</h2>
         <div class="date-time">${dateStr}${isToday ? ' (Today)' : ''}</div>
         <div class="main-temp">
             <span class="icon">${weatherInfo.icon}</span>
