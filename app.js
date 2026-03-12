@@ -133,12 +133,16 @@ function showDisambiguation(results, selectedDate) {
     }
     
     const options = uniqueResults.map(loc => {
-        // Handle undefined, null, or string "undefined" for admin1
+        // Handle undefined, null, or string "undefined" for admin1 and country
         const hasAdmin = loc.admin1 && loc.admin1 !== 'undefined' && loc.admin1.trim() !== '';
         const admin = hasAdmin ? `, ${loc.admin1}` : '';
+        
+        const hasCountry = loc.country && loc.country !== 'undefined' && loc.country.trim() !== '';
+        const country = hasCountry ? `, ${loc.country}` : '';
+        
         const pop = loc.population ? ` (${(loc.population / 1000).toFixed(0)}k)` : '';
-        return `<div class="location-option" data-lat="${loc.latitude}" data-lon="${loc.longitude}" data-name="${loc.name}" data-country="${loc.country}">
-            📍 ${loc.name}${admin}, ${loc.country}${pop}
+        return `<div class="location-option" data-lat="${loc.latitude}" data-lon="${loc.longitude}" data-name="${loc.name}" data-country="${loc.country || ''}">
+            📍 ${loc.name}${admin}${country}${pop}
         </div>`;
     }).join('');
     
