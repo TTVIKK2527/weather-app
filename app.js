@@ -106,26 +106,76 @@ async function getWeather() {
             throw new Error('City not found');
         }
 
-        // Sort by population (largest cities first) to get most relevant result
-        const sortedResults = geoData.results.sort((a, b) => {
-            const popA = a.population || 0;
-            const popB = b.population || 0;
-            return popB - popA;
-        });
-        
-        const location = sortedResults[0];
-        const isHistorical = new Date(selectedDate) < new Date(today);
-        const apiUrl = isHistorical ? HISTORICAL_URL : WEATHER_URL;
-        
-        const params = `latitude=${location.latitude}&longitude=${location.longitude}&start_date=${selectedDate}&end_date=${selectedDate}&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,winddirection_10m_dominant&temperature_unit=celsius&windspeed_unit=kmh&timezone=auto`;
-        
-        const weatherResponse = await fetch(`${apiUrl}?${params}`);
-        const weatherData = await weatherResponse.json();
-        
-        displayWeather(location, weatherData.daily, selectedDate);
+        // If multiple results, show disambiguation
+        if (geoData.results.length > 1) {
+            showDisambiguation(geoData.results, selectedDate);
+            return;
+        }
+
+        const location = geoData.results[0];
+        fetchWeatherForLocation(location, selectedDate);
     } catch (error) {
         showError(error.message);
     }
+}
+
+function showDisambiguation(results, selectedDate) {
+    const uniqueResults = results
+        .filter((loc, index, self) => 
+            index === self.findIndex(l => l.name === loc.name && l.country === loc.country)
+        )
+        .slice(0, 8);
+    
+    if (uniqueResults.length === 1) {
+        fetchWeatherForLocation(uniqueResults[0], selectedDate);
+        return;
+    }
+    
+    const options = uniqueResults.map(loc => {
+        const admin = loc.admin1 ? `, ${loc.admin1}` : '';
+        const pop = loc.population ? ` (${(loc.population / 1000).toFixed(0)}k)` : '';
+        return `<div class="location-option" data-lat="${loc.latitude}" data-lon="${loc.longitude}" data-name="${loc.name}" data-country="${loc.country}">
+            📍 ${loc.name}${admin}, ${loc.country}${pop}
+        </div>`;
+    }).join('');
+    
+    weatherDiv.innerHTML = `
+        <div class="disambiguation">
+            <h3>Multiple locations found. Please select:</h3>
+            <div class="location-options">
+                ${options}
+            </div>
+        </div>
+    `;
+    
+    document.querySelectorAll('.location-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const location = {
+                latitude: option.dataset.lat,
+                longitude: option.dataset.lon,
+                name: option.dataset.name,
+                country: option.dataset.country
+            };
+            cityInput.value = `${location.name}, ${location.country}`;
+            currentCity = cityInput.value;
+            fetchWeatherForLocation(location, selectedDate);
+        });
+    });
+}
+
+function fetchWeatherForLocation(location, selectedDate) {
+    const isHistorical = new Date(selectedDate) < new Date(today);
+    const apiUrl = isHistorical ? HISTORICAL_URL : WEATHER_URL;
+    
+    const params = `latitude=${location.latitude}&longitude=${location.longitude}&start_date=${selectedDate}&end_date=${selectedDate}&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,winddirection_10m_dominant&temperature_unit=celsius&windspeed_unit=kmh&timezone=auto`;
+    
+    fetch(`${apiUrl}?${params}`)
+        .then(response => response.json())
+        .then(weatherData => {
+            currentCity = cityInput.value;
+            displayWeather(location, weatherData.daily, selectedDate);
+        })
+        .catch(error => showError(error.message));
 }
 
 function displayWeather(location, weather, selectedDate) {

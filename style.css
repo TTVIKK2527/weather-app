@@ -174,3 +174,32 @@ button:hover {
     background: #ffebee;
     border-radius: 4px;
 }
+
+.disambiguation {
+    padding: 10px 0;
+}
+
+.disambiguation h3 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.location-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.location-option {
+    padding: 12px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+.location-option:hover {
+    background: #e0e0e0;
+}
