@@ -99,14 +99,21 @@ async function getWeather() {
 
     try {
         const encodedCity = encodeURIComponent(city);
-        const geoResponse = await fetch(`${GEOCODING_URL}?name=${encodedCity}&count=1&language=en&format=json`);
+        const geoResponse = await fetch(`${GEOCODING_URL}?name=${encodedCity}&count=10&language=en&format=json`);
         const geoData = await geoResponse.json();
         
         if (!geoData.results || geoData.results.length === 0) {
             throw new Error('City not found');
         }
 
-        const location = geoData.results[0];
+        // Sort by population (largest cities first) to get most relevant result
+        const sortedResults = geoData.results.sort((a, b) => {
+            const popA = a.population || 0;
+            const popB = b.population || 0;
+            return popB - popA;
+        });
+        
+        const location = sortedResults[0];
         const isHistorical = new Date(selectedDate) < new Date(today);
         const apiUrl = isHistorical ? HISTORICAL_URL : WEATHER_URL;
         
