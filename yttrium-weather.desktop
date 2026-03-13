@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Yttrium Weather
+Comment=Minimal weather app with live data
+Exec=yttrium-weather
+Icon=weather-clear
+Terminal=true
+Categories=Utility;Network;

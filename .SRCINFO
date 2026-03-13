@@ -1,0 +1,21 @@
+pkgbase = yttrium-weather
+	pkgdesc = Minimal weather web app with geolocation, history, and map view
+	pkgver = 0.1.0alpha
+	pkgrel = 1
+	url = https://github.com/TTVIKK2527/weather-app
+	arch = any
+	license = custom
+	depends = python
+	depends = xdg-utils
+	source = index.html
+	source = style.css
+	source = app.js
+	source = yttrium-weather
+	source = yttrium-weather.desktop
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = yttrium-weather

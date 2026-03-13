@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+app_dir="/usr/share/yttrium-weather"
+port="${YTTRIUM_WEATHER_PORT:-8765}"
+url="http://127.0.0.1:${port}"
+
+cleanup() {
+    if [[ -n "${server_pid:-}" ]] && kill -0 "$server_pid" 2>/dev/null; then
+        kill "$server_pid" 2>/dev/null || true
+    fi
+}
+
+trap cleanup EXIT INT TERM
+
+python3 -m http.server "$port" --directory "$app_dir" >/tmp/yttrium-weather.log 2>&1 &
+server_pid=$!
+
+sleep 1
+xdg-open "$url" >/dev/null 2>&1 || true
+
+echo "Yttrium Weather running at $url"
+echo "Press Ctrl+C to stop."
+wait "$server_pid"
